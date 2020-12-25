@@ -17,8 +17,6 @@ function useAsync(initialState) {
     ...initialState,
   })
 
-  const activeHttpRequests = React.useRef([])
-
   const run = React.useCallback((promise) => {
     if (!promise) {
       return;
@@ -33,16 +31,9 @@ function useAsync(initialState) {
         dispatch({type: 'rejected', error})
       },
     )
-  }, [])
+    }, [])
 
-  const getController = () => {
-    const newController = new AbortController();
-    activeHttpRequests.current.push(newController)
-
-    return newController
-  }
-
-  return { ...state, run, activeHttpRequests, getController };
+  return { ...state, run };
 }
 
 function pokemonInfoReducer(state, action) {
@@ -63,7 +54,7 @@ function pokemonInfoReducer(state, action) {
 }
 
 function PokemonInfo({pokemonName}) {
-  const {data: pokemon, status, error, activeHttpRequests, getController, run} = useAsync(
+  const {data: pokemon, status, error, run} = useAsync(
     {status: pokemonName ? 'pending' : 'idle'},
   )
 
@@ -72,18 +63,8 @@ function PokemonInfo({pokemonName}) {
       return
     }
 
-    const controller = getController()
-    run(fetchPokemon(pokemonName, 1500, controller.signal ))
-    activeHttpRequests.current = activeHttpRequests.current.filter( currentController => {
-      return currentController !== controller
-    })
-
-    return () => {
-      activeHttpRequests.current.forEach(controller => {
-        controller.abort()
-      })
-    }
-  },[getController, pokemonName, run])
+    run(fetchPokemon(pokemonName))
+  },[pokemonName, run])
 
   if (status === 'idle' || !pokemonName) {
     return 'Submit a pokemon'
