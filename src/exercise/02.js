@@ -10,7 +10,7 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 
-function useAsync(asyncCallback, initialState, dependencies) {
+function useAsync(asyncCallback, initialState) {
   const [state, dispatch] = React.useReducer(pokemonInfoReducer, {
     data: null,
     error: null,
@@ -32,7 +32,7 @@ function useAsync(asyncCallback, initialState, dependencies) {
         dispatch({type: 'rejected', error})
       },
     )
-  }, dependencies) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [asyncCallback]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return state;
 }
@@ -55,15 +55,17 @@ function pokemonInfoReducer(state, action) {
 }
 
 function PokemonInfo({pokemonName}) {
+  const getPokemon = React.useCallback( () => {
+    if (!pokemonName) {
+      return
+    }
+
+    return fetchPokemon(pokemonName)
+  },[pokemonName])
+
   const state = useAsync(
-    () => {
-      if (!pokemonName) {
-        return
-      }
-      return fetchPokemon(pokemonName)
-    },
+    getPokemon,
     {status: pokemonName ? 'pending' : 'idle'},
-    [pokemonName]
   )
 
   const {data, status, error} = state
