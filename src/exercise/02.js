@@ -17,8 +17,7 @@ function useAsync(initialState) {
     ...initialState,
   })
 
-  const run = React.useCallback((asyncCallback) => {
-    const promise = asyncCallback;
+  const run = React.useCallback((promise) => {
     if (!promise) {
       return;
     }
@@ -32,7 +31,7 @@ function useAsync(initialState) {
         dispatch({type: 'rejected', error})
       },
     )
-    },[] )
+    }, [])
 
   return { ...state, run };
 }
