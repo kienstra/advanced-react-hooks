@@ -10,12 +10,30 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 
+function useSafeDispatch(dispatch) {
+  const mountedRef = React.useRef()
+
+  React.useEffect( () => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  })
+
+  return React.useCallback( (...args) => {
+    if (mountedRef.current) {
+      return dispatch(...args)
+    }
+  }, [dispatch] )
+}
+
 function useAsync(initialState) {
-  const [state, dispatch] = React.useReducer(pokemonInfoReducer, {
+  const [state, unsafeDispatch] = React.useReducer(pokemonInfoReducer, {
     data: null,
     error: null,
     ...initialState,
   })
+  const dispatch = useSafeDispatch(unsafeDispatch)
 
   const run = React.useCallback((promise) => {
     if (!promise) {
@@ -31,7 +49,7 @@ function useAsync(initialState) {
         dispatch({type: 'rejected', error})
       },
     )
-    }, [])
+    }, [dispatch])
 
   return { ...state, run };
 }
