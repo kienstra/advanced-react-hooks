@@ -35,7 +35,6 @@ const MessagesDisplay = React.forwardRef(
   }
 );
 
-
 function App() {
   const messageDisplayRef = React.useRef()
   const [messages, setMessages] = React.useState(allMessages.slice(0, 8))
