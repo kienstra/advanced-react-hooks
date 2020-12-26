@@ -16,9 +16,20 @@ import {
 import {useAsync} from '../utils'
 
 const PokemonCacheContext = React.createContext()
+
+
 function PokemonCacheProvider(props) {
   const [cache, dispatch] = React.useReducer(pokemonCacheReducer, {})
   return <PokemonCacheContext.Provider value={[cache, dispatch]} { ...props } />
+}
+
+function usePokemonCache() {
+  const context = React.useContext(PokemonCacheContext)
+  if (! context) {
+    throw new Error('usePokemonCache() must be called inside a <PokemonCacheProvider>')
+  }
+
+  return context
 }
 
 function pokemonCacheReducer(state, action) {
@@ -33,7 +44,7 @@ function pokemonCacheReducer(state, action) {
 }
 
 function PokemonInfo({pokemonName}) {
-  const [cache, dispatch] = React.useContext(PokemonCacheContext)
+  const [cache, dispatch] = usePokemonCache()
 
   const {data: pokemon, status, error, run, setData} = useAsync()
 
@@ -64,7 +75,7 @@ function PokemonInfo({pokemonName}) {
 }
 
 function PreviousPokemon({onSelect}) {
-  const [cache] = React.useContext(PokemonCacheContext)
+  const [cache] = usePokemonCache()
   return (
     <div>
       Previous Pokemon
@@ -86,8 +97,8 @@ function PreviousPokemon({onSelect}) {
 
 function PokemonSection({onSelect, pokemonName}) {
   return (
-    <div style={{display: 'flex'}}>
-      <PokemonCacheProvider>
+    <PokemonCacheProvider>
+      <div style={{display: 'flex'}}>
         <PreviousPokemon onSelect={onSelect} />
         <div className="pokemon-info" style={{marginLeft: 10}}>
           <PokemonErrorBoundary
@@ -97,8 +108,8 @@ function PokemonSection({onSelect, pokemonName}) {
             <PokemonInfo pokemonName={pokemonName} />
           </PokemonErrorBoundary>
         </div>
-      </PokemonCacheProvider>
-    </div>
+      </div>
+    </PokemonCacheProvider>
   )
 }
 
