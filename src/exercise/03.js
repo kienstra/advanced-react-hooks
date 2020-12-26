@@ -16,12 +16,12 @@ function CountDisplay() {
 }
 
 function useCount() {
-  const [count, setCount] = React.useContext(CountContext)
-  if (count === undefined) {
+  const context = React.useContext(CountContext)
+  if (!context) {
     throw new Error('useCount() has to be called from within <CountProvider>')
   }
 
-  return [count, setCount]
+  return context;
 }
 
 function Counter() {
